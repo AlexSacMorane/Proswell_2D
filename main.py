@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 # from own code
 from parameters import get_parameters
-from lib_numpy_to_vtk import write_vtk_structured_points, write_multiple_vtk_structured_points
+from lib_numpy_to_vtk import write_vtk_structured_points, write_multiple_vtk_structured_points, write_disps_vtk_structured_points
 from lib_ic import generateIC
 from lib_reconstruct_displacement_brisard import reconstruct_displacement, reconstruct_displacement_unknownStressPolarization
 from lib_construction_new_map import construction_new_map
