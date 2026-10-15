@@ -201,22 +201,75 @@ def write_multiple_vtk_structured_points(
                 chunk = flat[i : i + per_line]
                 f.write(' '.join(map(str, chunk.tolist())) + '\n')
 
+#-------------------------------------------------------------------------------
 
-if __name__ == '__main__':
-    # demo: create a small 3D ramp and write sample.vtk in current folder
-    import os
+def write_disps_vtk_structured_points(
+    filename: str,
+    u_x: np.ndarray,
+    u_y: np.ndarray,
+    u_z: np.ndarray,
+    spacing: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+    origin: Tuple[float, float, float] = (0.0, 0.0, 0.0),    
+):
+    """Write `array` to a legacy ASCII VTK file as STRUCTURED_POINTS.
 
-    demo = np.zeros((16, 32, 48), dtype=np.float32)
-    # shape (Z, Y, X)
-    Z, Y, X = demo.shape
-    for z in range(Z):
-        for y in range(Y):
-            for x in range(X):
-                demo[z, y, x] = x + y * 0.5 + z * 0.2
+    Parameters
+    - filename: target .vtk filename
+    - u_i: 3D (Z, Y, X) NumPy arrays. Displacement in the direction i.
+    - spacing: voxel spacing (sx, sy, sz)
+    - origin: origin coordinates (ox, oy, oz)
 
-    out_ascii = os.path.join(os.path.dirname(__file__), 'sample.vtk')
-    out_bin = os.path.join(os.path.dirname(__file__), 'sample_bin.vtk')
-    write_vtk_structured_points(out_ascii, demo, spacing=(1.0, 1.0, 1.0), origin=(0, 0, 0), binary=False)
-    write_vtk_structured_points(out_bin, demo, spacing=(1.0, 1.0, 1.0), origin=(0, 0, 0), binary=True)
-    print('Wrote demo VTK to', out_ascii)
-    print('Wrote demo binary VTK to', out_bin)
+    The data are written in ASCII with X varying fastest (C-order ravel).
+    """
+    # read the array and check the dimension
+    if u_x.ndim == 2:
+        # interpret as (Y, X) -> make (Z=1, Y, X)
+        arr_x = u_x[np.newaxis, :, :]
+        arr_y = u_x[np.newaxis, :, :]
+        arr_z = u_x[np.newaxis, :, :]
+    elif u_x.ndim == 3:
+        arr_x = u_x
+        arr_y = u_y
+        arr_z = u_z
+    else:
+        raise ValueError('array must be 2D or 3D (Y,X) or (Z,Y,X)')
+    
+    # read the dimensions
+    zdim, ydim, xdim = arr_x.shape
+    npoints = xdim * ydim * zdim
+    
+    # prepare the header
+    header_lines = [
+        '# vtk DataFile Version 3.0',
+        'VTK output from numpy_to_vtk.py',
+        'ASCII',
+        'DATASET STRUCTURED_POINTS',
+        f'DIMENSIONS {xdim} {ydim} {zdim}',
+        f'ORIGIN {origin[0]} {origin[1]} {origin[2]}',
+        f'SPACING {spacing[0]} {spacing[1]} {spacing[2]}',
+        f'POINT_DATA {npoints}',
+    ]
+    # write the header
+    with open(filename, 'w') as f:
+        for line in header_lines:
+            f.write(line + '\n')
+
+    # VTK expects X fastest; for arr shaped (Z,Y,X), ravel(order='C') does that
+    flat_x = arr_x.ravel(order='C')
+    flat_y = arr_y.ravel(order='C')
+    flat_z = arr_z.ravel(order='C')
+
+    vtk_dtype = _map_dtype(flat_x.dtype)
+
+    header_lines_array = [
+    f'VECTORS displacement {vtk_dtype}',
+    ]    
+    with open(filename, 'a') as f:
+        # write the header
+        for line in header_lines_array:
+            f.write(line + '\n')
+
+        # Write data values, keep lines reasonably short
+        for i in range(0, flat_x.size):
+            f.write(str(flat_x[i])+ ' ' + str(flat_y[i])+ ' ' + str(flat_z[i])+ '\n')
+
