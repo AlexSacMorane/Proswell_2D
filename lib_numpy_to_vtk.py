@@ -32,6 +32,7 @@ def _map_dtype(dtype: np.dtype) -> str:
         return 'int'
     raise ValueError(f'Unsupported dtype: {dtype}')
 
+#-------------------------------------------------------------------------------
 
 def write_vtk_structured_points(
     filename: str,
@@ -59,7 +60,7 @@ def write_vtk_structured_points(
         # interpret as (Y, X) -> make (Z=1, Y, X)
         arr = array[np.newaxis, :, :]
     elif array.ndim == 3:
-        arr = array
+        raise ValueError('3D array must be (Z,Y,X)')
     else:
         raise ValueError('array must be 2D or 3D (Y,X) or (Z,Y,X)')
 
@@ -123,6 +124,8 @@ def write_vtk_structured_points(
                 chunk = flat[i : i + per_line]
                 f.write(' '.join(map(str, chunk.tolist())) + '\n')
 
+#-------------------------------------------------------------------------------
+
 def write_multiple_vtk_structured_points(
     filename: str,
     L_arrays: list[np.ndarray],
@@ -160,6 +163,8 @@ def write_multiple_vtk_structured_points(
             arr = L_arrays[i_array][np.newaxis, :, :]
         elif L_arrays[i_array].ndim == 3:
             arr = L_arrays[i_array]
+        else :
+            raise ValueError('array must be 2D or 3D (Y,X) or (Z,Y,X)')
 
         if i_array == 0:
             # read the dimensions
