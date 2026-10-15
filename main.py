@@ -232,6 +232,18 @@ while dict_sample['i_ite'] <= dict_user['n_ite'] and dict_sample['L_hyd'][-1] < 
             io.imsave(f'fft/u{i}.tiff', image)
         io.imsave(f'fft/un.tiff', np.sqrt(convert_to_tiff(grid_u[..., 0]**2)+convert_to_tiff(grid_u[..., 1]**2)+convert_to_tiff(grid_u[..., 2]**2)))
 
+    # pp grid_u
+    grid_u_pp = np.pad(grid_u, pad_width=((1, 0), (1, 0), (1, 0), (0, 0)), mode='edge')
+        
+    # write the displacement in a vtk
+    write_disps_vtk_structured_points(filename='vtk/disps_hyd'+str(dict_sample['i_ite']-1)+'.vtk',\
+                                        u_x=np.transpose(grid_u_pp[..., 0], (2, 1, 0)),\
+                                        u_y=np.transpose(grid_u_pp[..., 1], (2, 1, 0)),\
+                                        u_z=np.transpose(grid_u_pp[..., 2], (2, 1, 0)),\
+                                        spacing=(1/dict_user['dim_x'], 1/dict_user['dim_y'], 1/dict_user['dim_z']),\
+                                        #origin=( 1/dict_user['dim_x'], 1/dict_user['dim_y'], 1/dict_user['dim_z'])) 
+                                        origin=( 0, 0, 0)) 
+
     #---------------------------------------
     # Apply deformation
 
