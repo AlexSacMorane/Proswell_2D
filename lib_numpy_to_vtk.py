@@ -21,6 +21,7 @@ _DTYPE_MAP = {
     np.dtype('int8'): 'char',
 }
 
+#-------------------------------------------------------------------------------
 
 def _map_dtype(dtype: np.dtype) -> str:
     dt = np.dtype(dtype)
