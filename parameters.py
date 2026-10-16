@@ -108,7 +108,7 @@ def get_parameters():
     dict_user['alpha0'] = dict_user['alpha'].copy()
 
     # interpolation of the mechanical parameters for the anhydrite-gypsum
-    dict_user['flag_anhydrite_gypsum_interpolation'] = True
+    dict_user['flag_anhydrite_gypsum_interpolation'] = False
 
     # define the hydration increment
     dict_user['dhyd_ite'] = np.array([0.01])
